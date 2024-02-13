@@ -56,10 +56,10 @@ options:
     restart_policy:
       description:
         - The restart policy for the rulebook activation.
-      choices: ["always", "never", "on_failure"]
+      choices: ["always", "never", "on-failure"]
       default: "always"
       type: str
-    enabled:
+    is_enabled:
       description:
         - Whether the rulebook activation should be enabled.
       choices: ["true", "false"]
@@ -90,7 +90,7 @@ EXAMPLES = """
     rulebook: listen_for_events.yaml
     decision_environment: default-de
     restart_policy: always
-    enabled: true
+    is_enabled: true
     variables:
       listen_to_server: event_source_host.example.com
       listen_to_port: 8765
@@ -113,8 +113,8 @@ def main():
         project=dict(required=True),
         rulebook=dict(required=True),
         decision_environment=dict(required=True),
-        restart_policy=dict(choices=["always", "never", "on_failure"], default="always"),
-        enabled=dict(choices=["true", "false"], default="true"),
+        restart_policy=dict(choices=["always", "never", "on-failure"], default="always"),
+        is_enabled=dict(choices=["true", "false"], default="true"),
         variables=dict(),
         state=dict(choices=["present", "absent"], default="present"),
     )
@@ -130,7 +130,7 @@ def main():
     new_fields = {}
 
     # Attempt to look up an existing item based on the provided data
-    existing_item = module.get_one("rulebook_activations", name_or_id=name, key="req_url")
+    existing_item = module.get_one("activations", name_or_id=name, key="req_url")
 
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
@@ -157,8 +157,8 @@ def main():
     module.create_or_update_if_needed(
         existing_item,
         new_fields,
-        endpoint="rulebook_activations",
-        item_type="rulebook_activations",
+        endpoint="activations",
+        item_type="activations",
         key="req_url",
     )
 

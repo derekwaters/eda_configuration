@@ -18,35 +18,40 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = """
 ---
-module: decision_environment
+module: user
 author: "Derek Waters (dwaters@redhat.com)"
-short_description: Manage a Decision Environment in EDA Controller
+short_description: Manage a user in EDA Controller
 description:
-    - Create, update and delete decision environments in EDA Controller
+    - Create, update and delete users in EDA Controller
 options:
-    name:
+    username:
       description:
-        - The name of the decision environment.
+        - The username of the user.
       required: True
       type: str
-    new_name:
+    new_username:
       description:
-        - Setting this option will change the existing name (looked up via the name field).
+        - Setting this option will change the existing username (looked up via the username field).
       type: str
-    description:
+    first_name:
       description:
-        - The description of the decision environment.
+        - The first name of the user.
       required: False
       type: str
-    image_url:
+    last_name:
       description:
-        - The full image location to use for the decision environment, including the container registry, image name, and version tag.
+        - The last name of the user.
+      required: False
+      type: str
+    email:
+      description:
+        - The email address of the user.
+      required: False
+      type: str
+    password:
+      description:
+        - The password of the user.
       required: True
-      type: str
-    credential:
-      description:
-        - The token needed to access the container registry, if required.
-      required: False
       type: str
     state:
       description:
@@ -60,12 +65,13 @@ extends_documentation_fragment: infra.eda_configuration.auth
 
 
 EXAMPLES = """
-- name: Create eda decision environment
-  infra.eda_configuration.decision_environment:
-    name: my_de
-    description: my awesome decision environment
-    image_url: my-container_registry/ansible/de-minimal-8:latest
-    credential: registry_access_token
+- name: Create eda user
+  infra.eda_configuration.user:
+    username: test_user
+    first_name: Test
+    last_name: User
+    email: test_user@example.com
+    password: not_a_real_password
     state: present
     eda_host: eda.example.com
     eda_username: admin
@@ -79,11 +85,12 @@ from ..module_utils.eda_module import EDAModule
 def main():
     # Any additional arguments that are not fields of the item can be added here
     argument_spec = dict(
-        name=dict(required=True),
-        new_name=dict(),
-        description=dict(),
-        image_url=dict(required=True),
-        credential=dict(),
+        username=dict(required=True),
+        new_username=dict(),
+        first_name=dict(),
+        last_name=dict(),
+        email=dict(),
+        password=dict(required=True),
         state=dict(choices=["present", "absent"], default="present"),
     )
 
@@ -91,14 +98,14 @@ def main():
     module = EDAModule(argument_spec=argument_spec)
 
     # Extract our parameters
-    name = module.params.get("name")
-    new_name = module.params.get("new_name")
+    username = module.params.get("username")
+    new_username = module.params.get("new_username")
     state = module.params.get("state")
 
     new_fields = {}
 
     # Attempt to look up an existing item based on the provided data
-    existing_item = module.get_one("decision-environments", name_or_id=name, key="req_url")
+    existing_item = module.get_one("users", name_or_id=name, key="req_url")
 
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
@@ -107,24 +114,22 @@ def main():
     # Create the data that gets sent for create and update
     # Remove these two comments for final
     # Check that Links and groups works with this.
-    new_fields["name"] = new_name if new_name else (module.get_item_name(existing_item) if existing_item else name)
+    new_fields["username"] = new_username if new_username else (existing_item["username"] if existing_item else username)
     for field_name in (
-        "description",
-        "image_url",
+        "first_name",
+        "last_name",
+        "email",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:
             new_fields[field_name] = field_val
 
-    if module.params.get("credential") is not None:
-        new_fields["credential_id"] = module.resolve_name_to_id("credentials", module.params.get("credential"))
-
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
         existing_item,
         new_fields,
-        endpoint="decision-environments",
-        item_type="decision-environments",
+        endpoint="users",
+        item_type="users",
         key="req_url",
     )
 

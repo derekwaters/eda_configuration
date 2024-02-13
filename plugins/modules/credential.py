@@ -18,7 +18,7 @@ ANSIBLE_METADATA = {
 
 DOCUMENTATION = """
 ---
-module: user
+module: credential
 author: "Derek Waters (dwaters@redhat.com)"
 short_description: Manage a Credential in EDA Controller
 description:
@@ -51,7 +51,7 @@ options:
     credential_type:
       description:
         - The type of the credential.
-      choices: ["GitHub Personal Access Token", "GitLab Personal Access Token"]
+      choices: ["GitHub Personal Access Token", "GitLab Personal Access Token", "Container Registry"]
       default: "GitHub Personal Access Token"
       type: str
     state:
@@ -91,7 +91,7 @@ def main():
         description=dict(),
         username=dict(required=True),
         secret=dict(required=True),
-        credential_type=dict(choices=["GitHub Personal Access Token", "GitLab Personal Access Token"], default="GitHub Personal Access Token"),
+        credential_type=dict(choices=["GitHub Personal Access Token", "GitLab Personal Access Token", "Container Registry"], default="GitHub Personal Access Token"),
         state=dict(choices=["present", "absent"], default="present"),
     )
 
