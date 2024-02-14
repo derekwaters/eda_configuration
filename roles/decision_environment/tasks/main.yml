@@ -6,7 +6,7 @@
     name:             "{{ __de_item.name }}"
     new_name:         "{{ __de_item.new_name | default(omit) }}"
     description:      "{{ __de_item.description | default(omit) }}"
-    url:              "{{ __de_item.url | default(__de_item.scm_url | default(omit)) }}"
+    image_url:        "{{ __de_item.image_url | default(omit) }}"
     credential:       "{{ __de_item.credential | default(omit) }}"
     state:            "{{ __de_item.state | default(eda_state | default('present')) }}"
     eda_host:         "{{ eda_host | default(eda_hostname) }}"
