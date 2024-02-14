@@ -1,0 +1,13 @@
+---
+eda_rulebook_activations:
+  - name: my_activation
+    description: my awesome activation
+    project: my_project
+    rulebook: tests/examples/01_noop.yml
+    decision_environment: my_de
+    restart_policy: "always"
+    is_enabled: true
+    variables:
+      var_a: val_a
+    state: present
+...
