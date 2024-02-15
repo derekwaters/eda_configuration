@@ -3,6 +3,7 @@
 ## Description
 
 An Ansible Role to create User Tokens in EDA Controller. Note that tokens may only be applied to the user account accessing the API (ie. eda_username)
+Note that tokens cannot be updated, only created.
 
 ## Variables
 
@@ -52,7 +53,6 @@ This also speeds up the overall role.
 |`new_name`|""|yes|str|Setting this option will change the existing name (looked up via the name field.)|
 |`description`|""|yes|str|Description to use for the Project.|
 |`token`|""|yes|str|The value of the token to associate with the user.|
-|`state`|`present`|no|str|Desired state of the user token.|
 
 ### Standard User Token Data Structure
 
@@ -64,7 +64,6 @@ eda_user_tokens:
   - name: my_default_token
     description: my default user token
     token: TOKEN_VALUE
-    state: present
 ```
 
 ## Playbook Examples
