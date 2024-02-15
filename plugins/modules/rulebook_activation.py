@@ -90,7 +90,7 @@ EXAMPLES = """
     rulebook: listen_for_events.yaml
     decision_environment: default-de
     restart_policy: always
-    is_enabled: true
+    is_enabled: True
     variables:
       listen_to_server: event_source_host.example.com
       listen_to_port: 8765
@@ -114,7 +114,7 @@ def main():
         rulebook=dict(required=True),
         decision_environment=dict(required=True),
         restart_policy=dict(choices=["always", "never", "on-failure"], default="always"),
-        is_enabled=dict(choices=["true", "false"], default="true"),
+        is_enabled=dict(choices=[True, False], default=True),
         variables=dict(),
         state=dict(choices=["present", "absent"], default="present"),
     )
@@ -165,6 +165,15 @@ def main():
             endpoint="rulebooks", 
             name_or_id=module.params.get("rulebook"),
             data=search_args)["id"]
+
+    # Rulebook activations cannot be updated in place. Instead, if the object exists
+    # and needs patching, we'll remove the old activation and recreate it
+    if existing_item and module.objects_could_be_different(existing_item, new_fields):
+      module.warn('Existing rulebook activation {} has changed. The activation will be removed and recreated'.format(name))
+      # Delete the existing activation
+      module.delete_if_needed(existing_item, key="req_url")
+      # Set existing_item to None to force recreation
+      existing_item = None    
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
