@@ -118,6 +118,7 @@ def main():
     new_fields["name"] = new_name if new_name else (module.get_item_name(existing_item) if existing_item else name)
     for field_name in (
         "description",
+        "credential_type",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:

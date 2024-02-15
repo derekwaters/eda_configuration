@@ -142,6 +142,8 @@ def main():
     new_fields["name"] = new_name if new_name else (module.get_item_name(existing_item) if existing_item else name)
     for field_name in (
         "description",
+        "restart_policy",
+        "is_enabled",
         "variables",
     ):
         field_val = module.params.get(field_name)
