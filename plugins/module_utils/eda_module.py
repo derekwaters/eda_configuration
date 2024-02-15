@@ -285,6 +285,8 @@ class EDAModule(AnsibleModule):
                 new_data[name_field] = name_or_id
             new_kwargs["data"] = new_data
 
+        self.warn('Getting endpoint: {} with args {}'.format(endpoint, new_kwargs))
+
         response = self.get_endpoint(endpoint, **new_kwargs)
         if response["status_code"] != 200:
             fail_msg = "Got a {0} response when trying to get one from {1}".format(response["status_code"], endpoint)
@@ -474,6 +476,7 @@ class EDAModule(AnsibleModule):
         auto_exit=True,
         item_type="unknown",
         associations=None,
+        treat_conflict_as_unchanged=False,
     ):
 
         # This will exit from the module on its own
@@ -514,6 +517,8 @@ class EDAModule(AnsibleModule):
                         new_item["name"],
                     )
                 self.json_output["changed"] = True
+            elif response["status_code"] in [409] and treat_conflict_as_unchanged:
+                self.json_output["changed"] = False
             else:
                 if "json" in response and "__all__" in response["json"]:
                     self.fail_json(msg="Unable to create {0} {1}: {2}".format(item_type, item_name, response["json"]["__all__"][0]))
