@@ -151,7 +151,18 @@ def main():
     if module.params.get("project") is not None:
         new_fields["project_id"] = module.resolve_name_to_id("projects", module.params.get("project"))
     if module.params.get("decision_environment") is not None:
-        new_fields["decision_environment_id"] = module.resolve_name_to_id("decision_environments", module.params.get("decision_environment"))
+        new_fields["decision_environment_id"] = module.resolve_name_to_id("decision-environments", module.params.get("decision_environment"))
+    
+    # Rulebooks are indexed by both name and project_id (multiple projects
+    # may have the same rulebook names)
+    #
+    if module.params.get("rulebook") is not None:
+        search_args = {}
+        search_args["project_id"] = new_fields["project_id"]
+        new_fields["rulebook_id"] = module.get_exactly_one(
+            endpoint="rulebooks", 
+            name_or_id=module.params.get("rulebook"),
+            data=search_args)["id"]
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
