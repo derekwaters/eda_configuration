@@ -105,7 +105,7 @@ def main():
     new_fields = {}
 
     # Attempt to look up an existing item based on the provided data
-    existing_item = module.get_one("users", name_or_id=name, key="req_url")
+    existing_item = module.get_one("users", name_or_id=username, key="req_url")
 
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
@@ -119,6 +119,7 @@ def main():
         "first_name",
         "last_name",
         "email",
+        "password",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:
