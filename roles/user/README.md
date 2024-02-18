@@ -54,6 +54,7 @@ This also speeds up the overall role.
 |`last_name`|""|no|str|Last name of the user.|
 |`email`|""|no|str|The email address associated with the user.|
 |`password`|""|yes|str|The password to be used by the user.|
+|`roles`|""|yes|list|The names of system-defined roles to apply to the user.|
 |`state`|`present`|no|str|Desired state of the user.|
 
 ### Standard User Data Structure
@@ -68,6 +69,9 @@ eda_users:
     last_name: Name
     email: my_user@example.com
     password: MY_PASSWORD
+    roles:
+      - Viewer
+      - Auditor
     state: present
 ```
 

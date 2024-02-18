@@ -514,7 +514,7 @@ class EDAModule(AnsibleModule):
                     self.json_output["id"] = response["json"]["id"]
                     item_url = "{0}{1}/".format(
                         self.build_url(endpoint).geturl()[len(self.host):],
-                        new_item["name"],
+                        new_item[self.get_name_field_from_endpoint(endpoint)],
                     )
                 self.json_output["changed"] = True
             elif response["status_code"] in [409] and treat_conflict_as_unchanged:
@@ -567,7 +567,7 @@ class EDAModule(AnsibleModule):
             try:
                 item_url = fixed_url or existing_item[key]
                 item_type = existing_item["type"]
-                item_name = existing_item["name"]
+                item_name = existing_item[self.get_name_field_from_endpoint(endpoint)]
                 item_id = require_id and existing_item["id"]
             except KeyError as ke:
                 self.fail_json(msg="Unable to process update of item due to missing data {0}".format(ke))
@@ -577,7 +577,7 @@ class EDAModule(AnsibleModule):
 
             # If we decided the item needs to be updated, update it
             self.json_output["id"] = item_id
-            self.json_output["name"] = item_name
+            self.json_output[self.get_name_field_from_endpoint(endpoint)] = item_name
             self.json_output["type"] = item_type
             if needs_patch:
                 response = self.patch_endpoint(item_url, **{"data": new_item})

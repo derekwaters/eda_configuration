@@ -53,6 +53,11 @@ options:
         - The password of the user.
       required: True
       type: str
+    roles:
+      description:
+        - A list of the roles the user should have
+      required: True
+      type: list
     state:
       description:
         - Desired state of the resource.
@@ -72,6 +77,13 @@ EXAMPLES = """
     last_name: User
     email: test_user@example.com
     password: not_a_real_password
+    roles:
+      - Contributor
+      - Operator
+      - Auditor
+      - Viewer
+      - Admin
+      - Editor
     state: present
     eda_host: eda.example.com
     eda_username: admin
@@ -90,12 +102,15 @@ def main():
         first_name=dict(),
         last_name=dict(),
         email=dict(),
+        roles=dict(type="list",elements="str",required=True),
         password=dict(required=True),
         state=dict(choices=["present", "absent"], default="present"),
     )
 
     # Create a module for ourselves
     module = EDAModule(argument_spec=argument_spec)
+
+    module.IDENTITY_FIELDS["users"] = "username"
 
     # Extract our parameters
     username = module.params.get("username")
@@ -105,8 +120,16 @@ def main():
     new_fields = {}
 
     # Attempt to look up an existing item based on the provided data
-    existing_item = module.get_one("users", name_or_id=username, key="req_url")
-
+    # Because of limitations in the users api (ie. there is no search/filtering by username)
+    # we will retrieve *all* users, and manually look for an existing one.
+    # TODO: Implement a better method here once the EDA API is updated
+    all_existing_items = module.get_all_endpoint("users")
+    existing_item = None
+    if all_existing_items["json"]["count"] > 0:
+      for check_existing_item in all_existing_items["json"]["results"]:
+        if check_existing_item["username"] == username:
+          existing_item = module.existing_item_add_url(check_existing_item, "users", key="req_url")
+          
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
         module.delete_if_needed(existing_item, key="req_url")
@@ -124,6 +147,25 @@ def main():
         field_val = module.params.get(field_name)
         if field_val is not None:
             new_fields[field_name] = field_val
+
+    # Roles use a predefined set of role objects stored in the EDA database
+    # The API requires you to provide a list of the UUIDs (role.id)
+    submitted_roles = []
+    system_roles = module.get_all_endpoint("roles")
+    selected_roles = module.params.get("roles")
+    for role_name in selected_roles:
+      find_role = None
+      for system_role in system_roles["json"]["results"]:
+        if system_role["name"] == role_name:
+          find_role = system_role
+      if find_role:
+        submitted_roles.append(find_role['id'])
+      else:
+        module.fail_json(msg = "Unable to find role {}".format(role_name))
+    new_fields["roles"] = submitted_roles
+
+    module.warn('the_user_is: {}'.format(new_fields))
+    module.warn('the existing item is: {}'.format(existing_item))
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
