@@ -285,8 +285,6 @@ class EDAModule(AnsibleModule):
                 new_data[name_field] = name_or_id
             new_kwargs["data"] = new_data
 
-        self.warn('Getting endpoint: {} with args {}'.format(endpoint, new_kwargs))
-
         response = self.get_endpoint(endpoint, **new_kwargs)
         if response["status_code"] != 200:
             fail_msg = "Got a {0} response when trying to get one from {1}".format(response["status_code"], endpoint)
