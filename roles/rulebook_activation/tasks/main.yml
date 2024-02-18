@@ -11,7 +11,7 @@
     decision_environment: "{{ __activation_item.decision_environment | default(omit) }}"
     restart_policy:   "{{ __activation_item.restart_policy | default('always') }}"
     is_enabled:       "{{ __activation_item.is_enabled | default('true') }}"
-    variables:        "{{ __activation_item.dictionary | default(omit) }}"
+    variables:        "{{ __activation_item.variables | default(omit) }}"
     state:            "{{ __activation_item.state | default(eda_state | default('present')) }}"
     eda_host:         "{{ eda_host | default(eda_hostname) }}"
     eda_username:     "{{ eda_username | default(omit) }}"
