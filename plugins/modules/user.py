@@ -43,11 +43,6 @@ options:
         - The last name of the user.
       required: False
       type: str
-    email:
-      description:
-        - The email address of the user.
-      required: False
-      type: str
     password:
       description:
         - The password of the user.
@@ -75,7 +70,6 @@ EXAMPLES = """
     username: test_user
     first_name: Test
     last_name: User
-    email: test_user@example.com
     password: not_a_real_password
     roles:
       - Contributor
@@ -95,15 +89,21 @@ from ..module_utils.eda_module import EDAModule
 
 
 def main():
-    # Any additional arguments that are not fields of the item can be added here
+    # TODO: email can be specified, but the current EDA API
+    # does not return the email when you retrieve all the users
+    # in the system (see below for more info about why we need
+    # to do that)
+    # The email parameter should be added back to the argument_spec
+    # once emails can be retrieved from the API
+    #
     argument_spec = dict(
         username=dict(required=True),
         new_username=dict(),
         first_name=dict(),
         last_name=dict(),
-        email=dict(),
         roles=dict(type="list",elements="str",required=True),
-        password=dict(required=True),
+        password=dict(required=True,no_log=True),
+        is_superuser=dict(type="bool",required=False,default=False),
         state=dict(choices=["present", "absent"], default="present"),
     )
 
@@ -141,8 +141,8 @@ def main():
     for field_name in (
         "first_name",
         "last_name",
-        "email",
         "password",
+        "is_superuser",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:
@@ -164,8 +164,18 @@ def main():
         module.fail_json(msg = "Unable to find role {}".format(role_name))
     new_fields["roles"] = submitted_roles
 
-    module.warn('the_user_is: {}'.format(new_fields))
-    module.warn('the existing item is: {}'.format(existing_item))
+    # Because the API expects roles to be submitted as a list of UUIDs,
+    # but retrieving the existing user record returns the roles as role
+    # objects, we need to "flatten" the roles list
+    if existing_item:
+      new_roles = []
+      for role in existing_item["roles"]:
+        new_roles.append(role["id"])
+      # To ensure comparison between the existing
+      # and new role list, we sort the role UUIDs
+      new_roles.sort()
+      new_fields["roles"].sort()
+      existing_item["roles"] = new_roles
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(

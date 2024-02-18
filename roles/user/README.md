@@ -52,7 +52,6 @@ This also speeds up the overall role.
 |`new_username`|""|yes|str|Setting this option will change the existing username (looked up via the name field.)|
 |`first_name`|""|no|str|First name of the user.|
 |`last_name`|""|no|str|Last name of the user.|
-|`email`|""|no|str|The email address associated with the user.|
 |`password`|""|yes|str|The password to be used by the user.|
 |`roles`|""|yes|list|The names of system-defined roles to apply to the user.|
 |`state`|`present`|no|str|Desired state of the user.|
@@ -67,7 +66,6 @@ eda_users:
   - username: my_user
     first_name: User
     last_name: Name
-    email: my_user@example.com
     password: MY_PASSWORD
     roles:
       - Viewer

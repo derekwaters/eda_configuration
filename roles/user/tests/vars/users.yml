@@ -3,7 +3,6 @@ eda_users:
   - username: my_user
     first_name: User
     last_name: Name
-    email: my_user@example.com
     password: MY_PASSWORD
     roles:
       - Viewer
