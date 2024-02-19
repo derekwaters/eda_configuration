@@ -387,10 +387,8 @@ class EDAModule(AnsibleModule):
             self.json_output["changed"] = True
             if existing_item["type"] == "token":
                 self.json_output["msg"] = "Token Revoked"
-                self.exit_json(**self.json_output)
             else:
                 self.json_output["id"] = item_id
-                self.exit_json(**self.json_output)
             if auto_exit:
                 self.exit_json(**self.json_output)
             else:
@@ -510,6 +508,8 @@ class EDAModule(AnsibleModule):
                         self.json_output["name"] = response["json"][key]
                 if item_type != "token":
                     self.json_output["id"] = response["json"]["id"]
+                    if "id" not in new_item:
+                        new_item["id"] = response["json"]["id"]
                     item_url = "{0}{1}/".format(
                         self.build_url(endpoint).geturl()[len(self.host):],
                         new_item[self.get_name_field_from_endpoint(endpoint)],

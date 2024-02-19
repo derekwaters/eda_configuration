@@ -122,6 +122,9 @@ def main():
     # Create a module for ourselves
     module = EDAModule(argument_spec=argument_spec)
 
+    # The identity field for extra-vars is the extra_var id
+    module.IDENTITY_FIELDS["extra-vars"] = "id"
+
     # Extract our parameters
     name = module.params.get("name")
     new_name = module.params.get("new_name")
@@ -144,7 +147,6 @@ def main():
         "description",
         "restart_policy",
         "is_enabled",
-        "variables",
     ):
         field_val = module.params.get(field_name)
         if field_val is not None:
@@ -166,14 +168,25 @@ def main():
             name_or_id=module.params.get("rulebook"),
             data=search_args)["id"]
 
-    # Rulebook activations cannot be updated in place. Instead, if the object exists
-    # and needs patching, we'll remove the old activation and recreate it
-    if existing_item and module.objects_could_be_different(existing_item, new_fields):
-      module.warn('Existing rulebook activation {} has changed. The activation will be removed and recreated'.format(name))
-      # Delete the existing activation
-      module.delete_if_needed(existing_item, key="req_url")
-      # Set existing_item to None to force recreation
-      existing_item = None    
+    # Because rulebook activations cannot be updated in place, we will
+    # completely remove an activation that already exists and recreate
+    # it.
+    if existing_item:
+        module.warn('Existing rulebook activation {} has changed. The activation will be removed and recreated'.format(name))
+        # TODO: Note that removing the activation does *not* remove the
+        # extra_var associated with it. There is no DELETE endpoint for
+        # extra_vars. In a future EDA API, check to see if extra_vars 
+        # can be removed.
+        module.delete_if_needed(existing_item, key="req_url", auto_exit=False)
+        existing_item = None
+    
+    # variables need to be added to the extra-vars endpoint separately
+    # from the activations
+    if module.params.get("variables") is not None:
+        new_vars = {}
+        new_vars["extra_var"] = module.params.get("variables")
+        new_item = module.create_if_needed(None, new_vars, "extra-vars", auto_exit=False)
+        new_fields["extra_var_id"] = new_item["id"]
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(
