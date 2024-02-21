@@ -172,7 +172,7 @@ def main():
     # completely remove an activation that already exists and recreate
     # it.
     if existing_item:
-        module.warn('Existing rulebook activation {} has changed. The activation will be removed and recreated'.format(name))
+        module.warn('Rulebook activations cannot be updated in-place. Activation {} will be removed and recreated'.format(name))
         # TODO: Note that removing the activation does *not* remove the
         # extra_var associated with it. There is no DELETE endpoint for
         # extra_vars. In a future EDA API, check to see if extra_vars 
