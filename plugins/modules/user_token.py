@@ -99,12 +99,13 @@ def main():
             new_fields[field_name] = field_val
 
     module.create_if_needed(
-       None,
-       new_fields,
-       endpoint="users/me/awx-tokens",
-       item_type="awx-tokens",
-       treat_conflict_as_unchanged=True
+        None,
+        new_fields,
+        endpoint="users/me/awx-tokens",
+        item_type="awx-tokens",
+        treat_conflict_as_unchanged=True
     )
+
 
 if __name__ == "__main__":
     main()

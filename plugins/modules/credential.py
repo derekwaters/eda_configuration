@@ -91,7 +91,10 @@ def main():
         description=dict(),
         username=dict(required=True),
         secret=dict(required=True),
-        credential_type=dict(choices=["GitHub Personal Access Token", "GitLab Personal Access Token", "Container Registry"], default="GitHub Personal Access Token"),
+        credential_type=dict(choices=["GitHub Personal Access Token",
+                                      "GitLab Personal Access Token",
+                                      "Container Registry"],
+                             default="GitHub Personal Access Token"),
         state=dict(choices=["present", "absent"], default="present"),
     )
 

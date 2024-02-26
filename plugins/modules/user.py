@@ -101,9 +101,9 @@ def main():
         new_username=dict(),
         first_name=dict(),
         last_name=dict(),
-        roles=dict(type="list",elements="str",required=True),
-        password=dict(required=True,no_log=True),
-        is_superuser=dict(type="bool",required=False,default=False),
+        roles=dict(type="list", elements="str", required=True),
+        password=dict(required=True, no_log=True),
+        is_superuser=dict(type="bool", required=False, default=False),
         state=dict(choices=["present", "absent"], default="present"),
     )
 
@@ -126,10 +126,10 @@ def main():
     all_existing_items = module.get_all_endpoint("users")
     existing_item = None
     if all_existing_items["json"]["count"] > 0:
-      for check_existing_item in all_existing_items["json"]["results"]:
-        if check_existing_item["username"] == username:
-          existing_item = module.existing_item_add_url(check_existing_item, "users", key="req_url")
-          
+        for check_existing_item in all_existing_items["json"]["results"]:
+            if check_existing_item["username"] == username:
+                existing_item = module.existing_item_add_url(check_existing_item, "users", key="req_url")
+
     if state == "absent":
         # If the state was absent we can let the module delete it if needed, the module will handle exiting from this
         module.delete_if_needed(existing_item, key="req_url")
@@ -154,28 +154,28 @@ def main():
     system_roles = module.get_all_endpoint("roles")
     selected_roles = module.params.get("roles")
     for role_name in selected_roles:
-      find_role = None
-      for system_role in system_roles["json"]["results"]:
-        if system_role["name"] == role_name:
-          find_role = system_role
-      if find_role:
-        submitted_roles.append(find_role['id'])
-      else:
-        module.fail_json(msg = "Unable to find role {}".format(role_name))
+        find_role = None
+        for system_role in system_roles["json"]["results"]:
+            if system_role["name"] == role_name:
+                find_role = system_role
+        if find_role:
+            submitted_roles.append(find_role['id'])
+        else:
+            module.fail_json(msg="Unable to find role {}".format(role_name))
     new_fields["roles"] = submitted_roles
 
     # Because the API expects roles to be submitted as a list of UUIDs,
     # but retrieving the existing user record returns the roles as role
     # objects, we need to "flatten" the roles list
     if existing_item:
-      new_roles = []
-      for role in existing_item["roles"]:
-        new_roles.append(role["id"])
-      # To ensure comparison between the existing
-      # and new role list, we sort the role UUIDs
-      new_roles.sort()
-      new_fields["roles"].sort()
-      existing_item["roles"] = new_roles
+        new_roles = []
+        for role in existing_item["roles"]:
+            new_roles.append(role["id"])
+        # To ensure comparison between the existing
+        # and new role list, we sort the role UUIDs
+        new_roles.sort()
+        new_fields["roles"].sort()
+        existing_item["roles"] = new_roles
 
     # If the state was present and we can let the module build or update the existing item, this will return on its own
     module.create_or_update_if_needed(

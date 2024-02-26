@@ -156,7 +156,7 @@ def main():
         new_fields["project_id"] = module.resolve_name_to_id("projects", module.params.get("project"))
     if module.params.get("decision_environment") is not None:
         new_fields["decision_environment_id"] = module.resolve_name_to_id("decision-environments", module.params.get("decision_environment"))
-    
+
     # Rulebooks are indexed by both name and project_id (multiple projects
     # may have the same rulebook names)
     #
@@ -164,7 +164,7 @@ def main():
         search_args = {}
         search_args["project_id"] = new_fields["project_id"]
         new_fields["rulebook_id"] = module.get_exactly_one(
-            endpoint="rulebooks", 
+            endpoint="rulebooks",
             name_or_id=module.params.get("rulebook"),
             data=search_args)["id"]
 
@@ -175,11 +175,11 @@ def main():
         module.warn('Rulebook activations cannot be updated in-place. Activation {} will be removed and recreated'.format(name))
         # TODO: Note that removing the activation does *not* remove the
         # extra_var associated with it. There is no DELETE endpoint for
-        # extra_vars. In a future EDA API, check to see if extra_vars 
+        # extra_vars. In a future EDA API, check to see if extra_vars
         # can be removed.
         module.delete_if_needed(existing_item, key="req_url", auto_exit=False)
         existing_item = None
-    
+
     # variables need to be added to the extra-vars endpoint separately
     # from the activations
     if module.params.get("variables") is not None:
